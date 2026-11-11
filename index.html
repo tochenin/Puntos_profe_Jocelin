@@ -50,16 +50,17 @@
       <!-- Criterios y Puntos -->
       <div class="glass-card p-6 rounded-2xl">
         <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">1. Seleccionar Criterio de Evaluación</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-6" id="categoryContainer">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 mb-6" id="categoryContainer">
           <button onclick="selectCategory('Participación', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 border-indigo-500/50 bg-indigo-950/30 text-indigo-300"><i class="fa-solid fa-hand text-base"></i> Participación</button>
           <button onclick="selectCategory('Convivencia', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-users text-base"></i> Convivencia</button>
           <button onclick="selectCategory('Responsabilidad', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-clock text-base"></i> Responsabilidad</button>
           <button onclick="selectCategory('Orden', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-broom text-base"></i> Orden</button>
           <button onclick="selectCategory('Tareas', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-book text-base"></i> Tareas</button>
+          <button onclick="selectCategory('Otros', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-star text-base"></i> Otros</button>
         </div>
 
         <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">2. Otorgar Puntos</h2>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Botones de Sumar -->
           <div>
             <p class="text-xs text-emerald-400 font-semibold mb-2"><i class="fa-solid fa-plus-circle"></i> Agregar Puntos</p>
@@ -85,7 +86,7 @@
         </div>
       </div>
 
-      <!-- Lista de Estudiantes con opción de Agregar -->
+      <!-- Lista de Estudiantes con opción de Agregar / Quitar -->
       <div class="glass-card p-6 rounded-2xl">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h2 class="text-base font-bold text-slate-200">Estudiantes del Curso (<span id="studentCount">0</span>)</h2>
