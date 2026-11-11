@@ -46,6 +46,8 @@
 
   <main class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
     <section class="lg:col-span-2 space-y-6">
+      
+      <!-- Criterios y Puntos -->
       <div class="glass-card p-6 rounded-2xl">
         <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">1. Seleccionar Criterio de Evaluación</h2>
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-6" id="categoryContainer">
@@ -66,18 +68,29 @@
         </div>
       </div>
 
+      <!-- Lista de Estudiantes con opción de Agregar -->
       <div class="glass-card p-6 rounded-2xl">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h2 class="text-base font-bold text-slate-200">Estudiantes del Curso (<span id="studentCount">0</span>)</h2>
-          <div class="flex gap-2">
+          <div class="flex gap-2 w-full sm:w-auto">
             <button onclick="selectAll(true)" class="text-xs px-3 py-1.5 dark-btn rounded-lg text-slate-300">Seleccionar todos</button>
             <button onclick="selectAll(false)" class="text-xs px-3 py-1.5 dark-btn rounded-lg text-slate-400">Deseleccionar</button>
           </div>
         </div>
-        <div id="studentList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2"></div>
+
+        <!-- Formulario para Agregar Estudiante -->
+        <div class="flex gap-2 mb-4">
+          <input type="text" id="newStudentName" placeholder="Nombre y apellido del nuevo alumno..." class="flex-1 bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+          <button onclick="addStudent()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> Agregar
+          </button>
+        </div>
+
+        <div id="studentList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[450px] overflow-y-auto pr-2"></div>
       </div>
     </section>
 
+    <!-- Sidebar -->
     <aside class="space-y-6">
       <div class="glass-card p-6 rounded-2xl">
         <h2 class="text-base font-bold text-slate-200 mb-4 flex items-center gap-2"><i class="fa-solid fa-link text-indigo-400"></i> Enlaces Únicos</h2>
@@ -101,23 +114,10 @@
     let selectedCategory = 'Participación';
     let currentStudents = [];
 
-    function generateMockData(course) {
-      const names = ["Agustín", "Sofía", "Mateo", "Emma", "Lucas", "Isabella", "Benjamín", "Valentina", "Santiago", "Camila", "Joaquín", "Valeria", "Maximilian", "Mariana", "Tomas", "Gabriela", "Felipe", "Victoria", "Antonella", "Martín"];
-      const surnames = ["González", "Muñoz", "Rojas", "Díaz", "Pérez", "Soto", "Contreras", "Silva", "Sepúlveda", "Morales", "Rodríguez", "López", "Fuentes", "Valenzuela", "Araya"];
-      let list = [];
-      for(let i = 1; i <= 45; i++) {
-        const fn = names[(i + course.charCodeAt(0)) % names.length];
-        const ln = surnames[(i + course.charCodeAt(1)) % surnames.length];
-        list.push({ id: `${course}_${i}`, name: `${fn} ${ln}`, points: Math.floor(Math.random() * 15) + 5, selected: false });
-      }
-      return list;
-    }
-
     function loadCourseData() {
       const course = document.getElementById('courseSelect').value;
       const savedData = localStorage.getItem(`students_${course}`);
-      currentStudents = savedData ? JSON.parse(savedData) : generateMockData(course);
-      if(!savedData) saveCurrentData();
+      currentStudents = savedData ? JSON.parse(savedData) : [];
       renderStudents();
       updateLinkDropdown();
     }
@@ -129,80 +129,4 @@
     function renderStudents() {
       const container = document.getElementById('studentList');
       container.innerHTML = '';
-      document.getElementById('studentCount').innerText = currentStudents.length;
-      currentStudents.forEach((student, index) => {
-        const card = document.createElement('div');
-        card.className = `p-3 rounded-xl dark-btn flex items-center justify-between cursor-pointer border ${student.selected ? 'border-indigo-500 bg-indigo-950/20' : 'border-slate-800'}`;
-        card.onclick = () => toggleSelect(index);
-        card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <input type="checkbox" ${student.selected ? 'checked' : ''} class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-900 border-slate-700">
-            <span class="text-xs font-medium text-slate-200">${student.name}</span>
-          </div>
-          <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-950 text-indigo-400 border border-indigo-800/50">${student.points} pts</span>`;
-        container.appendChild(card);
-      });
-    }
-
-    function selectCategory(cat, btn) {
-      selectedCategory = cat;
-      document.querySelectorAll('.cat-btn').forEach(b => b.className = "cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300");
-      btn.className = "cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 border-indigo-500/50 bg-indigo-950/30 text-indigo-300";
-    }
-
-    function toggleSelect(index) {
-      currentStudents[index].selected = !currentStudents[index].selected;
-      renderStudents();
-    }
-
-    function selectAll(status) {
-      currentStudents.forEach(s => s.selected = status);
-      renderStudents();
-    }
-
-    function addPoints(pts) {
-      const selected = currentStudents.filter(s => s.selected);
-      if(selected.length === 0) { alert("Por favor, selecciona al menos un estudiante."); return; }
-      selected.forEach(s => s.points += pts);
-      saveCurrentData();
-      renderStudents();
-      logActivity(`+${pts} pts en ${selectedCategory} a ${selected.length} estudiante(s).`);
-    }
-
-    function logActivity(text) {
-      const log = document.getElementById('activityLog');
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const item = document.createElement('li');
-      item.className = "flex justify-between items-center py-1 border-b border-slate-800/50";
-      item.innerHTML = `<span>${text}</span> <span class="text-[10px] text-slate-500">${time}</span>`;
-      if(log.children[0]?.classList.contains('italic')) log.innerHTML = '';
-      log.prepend(item);
-    }
-
-    function updateLinkDropdown() {
-      const select = document.getElementById('studentLinkSelect');
-      select.innerHTML = '<option value="">Selecciona un estudiante...</option>';
-      currentStudents.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.innerText = s.name;
-        select.appendChild(opt);
-      });
-    }
-
-    function generateLink() {
-      const id = document.getElementById('studentLinkSelect').value;
-      if(!id) return;
-      const res = document.getElementById('linkResult');
-      res.classList.remove('hidden');
-      res.innerHTML = `<i class="fa-solid fa-check circle mr-1"></i> <strong>Enlace del Alumno:</strong><br>${window.location.href.split('?')[0]}?student=${id}`;
-    }
-
-    function openRewardModal() {
-      alert("Catálogo de Recompensas: 20 pts = Tiempo libre | 35 pts = Puntos extra en prueba | 50 pts = Premio sorpresa.");
-    }
-
-    loadCourseData();
-  </script>
-</body>
-</html>
+      document.getElementById
