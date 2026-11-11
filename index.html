@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión de Puntos - Aula Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .dark-btn { background: #1e293b; border: 1px solid #334155; transition: all 0.2s ease; }
+    .dark-btn:hover { background: #334155; border-color: #6366f1; transform: translateY(-1px); }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
+
+  <header class="glass-card sticky top-0 z-50 border-b border-slate-700/50 bg-slate-900/80 px-6 py-4 mb-8">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-xl border border-indigo-500/30">
+          <i class="fa-solid fa-graduation-cap text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-100">Panel de Puntos de Aula</h1>
+          <p class="text-xs text-slate-400">Gestión de conducta y recompensas</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <label class="text-sm font-medium text-slate-300 whitespace-nowrap">Curso:</label>
+        <select id="courseSelect" onchange="loadCourseData()" class="w-full md:w-48 bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+          <option value="5A">5° Básico A</option>
+          <option value="5B">5° Básico B</option>
+          <option value="6A">6° Básico A</option>
+          <option value="6B">6° Básico B</option>
+        </select>
+        <button onclick="openRewardModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-lg shadow-lg shadow-indigo-600/20 transition flex items-center gap-2">
+          <i class="fa-solid fa-gift"></i> Catálogo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <section class="lg:col-span-2 space-y-6">
+      <div class="glass-card p-6 rounded-2xl">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">1. Seleccionar Criterio de Evaluación</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-6" id="categoryContainer">
+          <button onclick="selectCategory('Participación', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 border-indigo-500/50 bg-indigo-950/30 text-indigo-300"><i class="fa-solid fa-hand text-base"></i> Participación</button>
+          <button onclick="selectCategory('Convivencia', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-users text-base"></i> Convivencia</button>
+          <button onclick="selectCategory('Responsabilidad', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-clock text-base"></i> Responsabilidad</button>
+          <button onclick="selectCategory('Orden', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-broom text-base"></i> Orden</button>
+          <button onclick="selectCategory('Tareas', this)" class="cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300"><i class="fa-solid fa-book text-base"></i> Tareas</button>
+        </div>
+
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">2. Otorgar Puntos Oscuros</h2>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="addPoints(1)" class="flex-1 min-w-[70px] py-3 dark-btn rounded-xl font-bold text-emerald-400 border-emerald-900/50 hover:border-emerald-500/50 hover:bg-emerald-950/30 text-lg">+1</button>
+          <button onclick="addPoints(2)" class="flex-1 min-w-[70px] py-3 dark-btn rounded-xl font-bold text-emerald-400 border-emerald-900/50 hover:border-emerald-500/50 hover:bg-emerald-950/30 text-lg">+2</button>
+          <button onclick="addPoints(3)" class="flex-1 min-w-[70px] py-3 dark-btn rounded-xl font-bold text-emerald-400 border-emerald-900/50 hover:border-emerald-500/50 hover:bg-emerald-950/30 text-lg">+3</button>
+          <button onclick="addPoints(4)" class="flex-1 min-w-[70px] py-3 dark-btn rounded-xl font-bold text-emerald-400 border-emerald-900/50 hover:border-emerald-500/50 hover:bg-emerald-950/30 text-lg">+4</button>
+          <button onclick="addPoints(5)" class="flex-1 min-w-[70px] py-3 dark-btn rounded-xl font-bold text-emerald-400 border-emerald-900/50 hover:border-emerald-500/50 hover:bg-emerald-950/30 text-lg">+5</button>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-base font-bold text-slate-200">Estudiantes del Curso (<span id="studentCount">0</span>)</h2>
+          <div class="flex gap-2">
+            <button onclick="selectAll(true)" class="text-xs px-3 py-1.5 dark-btn rounded-lg text-slate-300">Seleccionar todos</button>
+            <button onclick="selectAll(false)" class="text-xs px-3 py-1.5 dark-btn rounded-lg text-slate-400">Deseleccionar</button>
+          </div>
+        </div>
+        <div id="studentList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2"></div>
+      </div>
+    </section>
+
+    <aside class="space-y-6">
+      <div class="glass-card p-6 rounded-2xl">
+        <h2 class="text-base font-bold text-slate-200 mb-4 flex items-center gap-2"><i class="fa-solid fa-link text-indigo-400"></i> Enlaces Únicos</h2>
+        <select id="studentLinkSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg p-2.5 mb-3">
+          <option value="">Selecciona un estudiante...</option>
+        </select>
+        <button onclick="generateLink()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition">Generar Enlace</button>
+        <div id="linkResult" class="mt-4 hidden p-3 bg-slate-900/90 border border-indigo-500/30 rounded-lg text-xs text-indigo-300 break-all"></div>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl">
+        <h2 class="text-base font-bold text-slate-200 mb-4 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Historial Reciente</h2>
+        <ul id="activityLog" class="space-y-2.5 text-xs text-slate-400 max-h-[300px] overflow-y-auto">
+          <li class="italic text-slate-500">Sin movimientos registrados hoy.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    let selectedCategory = 'Participación';
+    let currentStudents = [];
+
+    function generateMockData(course) {
+      const names = ["Agustín", "Sofía", "Mateo", "Emma", "Lucas", "Isabella", "Benjamín", "Valentina", "Santiago", "Camila", "Joaquín", "Valeria", "Maximilian", "Mariana", "Tomas", "Gabriela", "Felipe", "Victoria", "Antonella", "Martín"];
+      const surnames = ["González", "Muñoz", "Rojas", "Díaz", "Pérez", "Soto", "Contreras", "Silva", "Sepúlveda", "Morales", "Rodríguez", "López", "Fuentes", "Valenzuela", "Araya"];
+      let list = [];
+      for(let i = 1; i <= 45; i++) {
+        const fn = names[(i + course.charCodeAt(0)) % names.length];
+        const ln = surnames[(i + course.charCodeAt(1)) % surnames.length];
+        list.push({ id: `${course}_${i}`, name: `${fn} ${ln}`, points: Math.floor(Math.random() * 15) + 5, selected: false });
+      }
+      return list;
+    }
+
+    function loadCourseData() {
+      const course = document.getElementById('courseSelect').value;
+      const savedData = localStorage.getItem(`students_${course}`);
+      currentStudents = savedData ? JSON.parse(savedData) : generateMockData(course);
+      if(!savedData) saveCurrentData();
+      renderStudents();
+      updateLinkDropdown();
+    }
+
+    function saveCurrentData() {
+      localStorage.setItem(`students_${document.getElementById('courseSelect').value}`, JSON.stringify(currentStudents));
+    }
+
+    function renderStudents() {
+      const container = document.getElementById('studentList');
+      container.innerHTML = '';
+      document.getElementById('studentCount').innerText = currentStudents.length;
+      currentStudents.forEach((student, index) => {
+        const card = document.createElement('div');
+        card.className = `p-3 rounded-xl dark-btn flex items-center justify-between cursor-pointer border ${student.selected ? 'border-indigo-500 bg-indigo-950/20' : 'border-slate-800'}`;
+        card.onclick = () => toggleSelect(index);
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <input type="checkbox" ${student.selected ? 'checked' : ''} class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-900 border-slate-700">
+            <span class="text-xs font-medium text-slate-200">${student.name}</span>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-950 text-indigo-400 border border-indigo-800/50">${student.points} pts</span>`;
+        container.appendChild(card);
+      });
+    }
+
+    function selectCategory(cat, btn) {
+      selectedCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.className = "cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 text-slate-300");
+      btn.className = "cat-btn dark-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-2 border-indigo-500/50 bg-indigo-950/30 text-indigo-300";
+    }
+
+    function toggleSelect(index) {
+      currentStudents[index].selected = !currentStudents[index].selected;
+      renderStudents();
+    }
+
+    function selectAll(status) {
+      currentStudents.forEach(s => s.selected = status);
+      renderStudents();
+    }
+
+    function addPoints(pts) {
+      const selected = currentStudents.filter(s => s.selected);
+      if(selected.length === 0) { alert("Por favor, selecciona al menos un estudiante."); return; }
+      selected.forEach(s => s.points += pts);
+      saveCurrentData();
+      renderStudents();
+      logActivity(`+${pts} pts en ${selectedCategory} a ${selected.length} estudiante(s).`);
+    }
+
+    function logActivity(text) {
+      const log = document.getElementById('activityLog');
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const item = document.createElement('li');
+      item.className = "flex justify-between items-center py-1 border-b border-slate-800/50";
+      item.innerHTML = `<span>${text}</span> <span class="text-[10px] text-slate-500">${time}</span>`;
+      if(log.children[0]?.classList.contains('italic')) log.innerHTML = '';
+      log.prepend(item);
+    }
+
+    function updateLinkDropdown() {
+      const select = document.getElementById('studentLinkSelect');
+      select.innerHTML = '<option value="">Selecciona un estudiante...</option>';
+      currentStudents.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.innerText = s.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function generateLink() {
+      const id = document.getElementById('studentLinkSelect').value;
+      if(!id) return;
+      const res = document.getElementById('linkResult');
+      res.classList.remove('hidden');
+      res.innerHTML = `<i class="fa-solid fa-check circle mr-1"></i> <strong>Enlace del Alumno:</strong><br>${window.location.href.split('?')[0]}?student=${id}`;
+    }
+
+    function openRewardModal() {
+      alert("Catálogo de Recompensas: 20 pts = Tiempo libre | 35 pts = Puntos extra en prueba | 50 pts = Premio sorpresa.");
+    }
+
+    loadCourseData();
+  </script>
+</body>
+</html>
